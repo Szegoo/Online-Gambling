@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 const web3 = new Web3(Web3.givenProvider);
 declare let window: any;
 
-export const contractAddress = "0x002E88Eb18fbCDCeb1D838dA293cd36c5DA82970";
+export const contractAddress = "0x6391B9BC74d883150df8fD0c456504B6B6b88A0A";
 const enableMetamask = async (): Promise<{ prize: number, razlika: number }> => {
 	const accounts = await window.ethereum.enable();
 	const account = accounts[0];
@@ -20,27 +20,49 @@ const enableMetamask = async (): Promise<{ prize: number, razlika: number }> => 
 		razlika
 	};
 }
-const play = async (number) => {
-	const accounts = await window.ethereum.enable();
-	const account = accounts[0];
-	const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
-	const value = new BigNumber(Math.pow(10, 16)).toString();
-	await Game.methods.join(number).send({
-		value
-	});
-}
 export default () => {
+	const play = async (number) => {
+		const accounts = await window.ethereum.enable();
+		const account = accounts[0];
+		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
+		const value = new BigNumber(Math.pow(10, 16)).toString();
+		setSent(true);
+		await Game.methods.join(number).send({
+			value
+		});
+	}
+	const LastWinnerNumber = async (last) => {
+		const accounts = await window.ethereum.enable();
+		const account = accounts[0];
+		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
+		const number = await Game.methods.winnerNumber().call();
+		if (last)
+			setLastWinNum(number);
+		else {
+			setWinNum(number);
+		}
+	}
 	const [counter, setCounter] = useState(0);
 	const [prize, setPrize] = useState(0);
 	const [timer, setTimer] = useState(0);
+	const [sent, setSent] = useState(false);
+	const [lastWinnerNumber, setLastWinNum] = useState(0);
+	const [winnerNumber, setWinNum] = useState(0);
 	const max = 5;
 	useEffect(() => {
+		LastWinnerNumber(true);
 		enableMetamask().then(data => {
 			setPrize(data.prize);
 			setTimer(data.razlika);
 		});
 		setInterval(() => {
-			setTimer(prev => prev - 1);
+			console.log(timer);
+			if (timer >= 0)
+				setTimer(prev => prev - 1);
+			else {
+				setTimer(-1);
+				LastWinnerNumber(false);
+			}
 		}, 1000);
 	}, []);
 	const humanize = (time) => {
@@ -53,13 +75,13 @@ export default () => {
 				<h1>Welcome to Crypto-Gambling</h1>
 				<h2>Pogodi broj od 0 do 5</h2>
 				<div className="number-input">
-					<button onClick={() => {
+					<button disabled={sent} onClick={() => {
 						if (counter > 0) {
 							setCounter(counter - 1);
 						}
 					}}>-</button>
 					<span>{counter}</span>
-					<button onClick={() => {
+					<button disabled={sent} onClick={() => {
 						if (counter < max) {
 							setCounter(counter + 1);
 						}
@@ -70,6 +92,9 @@ export default () => {
 				</button>
 				<p>Total prize: {(prize * Math.pow(10, -18)).toFixed(2)}ETH</p>
 				<h1 className="counter">{humanize(timer.toFixed(0))}</h1>
+				<p>Your number: {counter}</p>
+				<h3 style={{ color: "white" }}>Winner number: {winnerNumber}</h3>
+				<h4 >Last winner number: {lastWinnerNumber}</h4>
 			</main>
 		</div>
 	)

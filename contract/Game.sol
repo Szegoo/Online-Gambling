@@ -55,6 +55,7 @@ contract Game {
                 delete players;
             } else {
                 uint256 singlePrize = prize / localWinners.length;
+                prize = 0;
                 for (uint256 i = 0; i < localWinners.length; i++) {
                     winners[localWinners[i]] += singlePrize;
                 }
