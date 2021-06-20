@@ -40,6 +40,10 @@ export default () => {
 			setLastWinNum(number);
 		else {
 			setWinNum(number);
+			const isWinner = await Game.methods.winners(account).call();
+			if (isWinner > 0) {
+				await Game.methods.withdraw().call();
+			}
 		}
 	}
 	const [counter, setCounter] = useState(0);
@@ -61,7 +65,8 @@ export default () => {
 				setTimer(prev => prev - 1);
 			else {
 				setTimer(-1);
-				LastWinnerNumber(false);
+				if (winnerNumber !== 0)
+					LastWinnerNumber(false);
 			}
 		}, 1000);
 	}, []);
@@ -91,7 +96,7 @@ export default () => {
 					Join The Game
 				</button>
 				<p>Total prize: {(prize * Math.pow(10, -18)).toFixed(2)}ETH</p>
-				<h1 className="counter">{humanize(timer.toFixed(0))}</h1>
+				<h1 className="counter">{timer < 0 && "-"}{humanize(timer.toFixed(0))}</h1>
 				<p>Your number: {counter}</p>
 				<h3 style={{ color: "white" }}>Winner number: {winnerNumber}</h3>
 				<h4 >Last winner number: {lastWinnerNumber}</h4>
