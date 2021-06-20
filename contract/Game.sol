@@ -51,6 +51,7 @@ contract Game {
             if (localWinners.length == 0) {
                 ticketDeadline = block.timestamp + duration;
                 revealDeadline = ticketDeadline + revealDuration;
+                winnerNumber = uint8(finalNumber);
                 delete players;
             } else {
                 uint256 singlePrize = prize / localWinners.length;

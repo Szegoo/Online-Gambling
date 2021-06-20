@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 const web3 = new Web3(Web3.givenProvider);
 declare let window: any;
 
-export const contractAddress = "0x52bC751358D6e1B6F2B0D274F3A9ac0e6D73d965";
+export const contractAddress = "0x002E88Eb18fbCDCeb1D838dA293cd36c5DA82970";
 const enableMetamask = async () => {
 	const accounts = await window.ethereum.enable();
 	const account = accounts[0];
