@@ -74,7 +74,9 @@ export default ({ backgroundColor, color }) => {
                     display: none; }
                     @media (max-width: 450px) {
                         .navigation-bar-mobile {
-                        display: block; } }
+                        display: flex;
+                        align-items: center;
+                     } }
                     .navigation-bar-mobile > .navigation-toggle {
                         width: fit-content;
                         height: 50px; }
