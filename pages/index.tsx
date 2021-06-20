@@ -1,20 +1,37 @@
 import NavBar from '../components/navigation-bar';
 import Web3 from 'web3';
+import BigNumber from 'bignumber.js';
+import { ABI } from '../contract/ABI';
 import { useEffect, useState } from 'react';
 const web3 = new Web3(Web3.givenProvider);
 declare let window: any;
 
-const contractAddress = "0xccf9e23dde44Ee341bd0739fd4b40670501ba523";
+export const contractAddress = "0x52bC751358D6e1B6F2B0D274F3A9ac0e6D73d965";
 const enableMetamask = async () => {
 	const accounts = await window.ethereum.enable();
 	const account = accounts[0];
+	const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
+	const prize = Game.methods.prize().call();
+	return prize;
+}
+const play = async (number) => {
+	const accounts = await window.ethereum.enable();
+	const account = accounts[0];
+	const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
+	const value = new BigNumber(Math.pow(10, 16)).toString();
+	await Game.methods.join(number).send({
+		value
+	});
 }
 export default () => {
 	const [counter, setCounter] = useState(0);
+	const [prize, setPrize] = useState(0);
 	const max = 5;
 	useEffect(() => {
-		enableMetamask();
-	})
+		enableMetamask().then(data => {
+			setPrize(data);
+		})
+	}, [prize])
 	return (
 		<div>
 			<NavBar backgroundColor="#21313b" color="#e09320" />
@@ -27,13 +44,17 @@ export default () => {
 							setCounter(counter - 1);
 						}
 					}}>-</button>
-					<input value={counter} disabled={true} type="number" />
+					<span>{counter}</span>
 					<button onClick={() => {
 						if (counter < max) {
 							setCounter(counter + 1);
 						}
 					}}>+</button>
 				</div>
+				<button onClick={() => play(counter)}>
+					Join The Game
+				</button>
+				<p>Total prize: {(prize * Math.pow(10, -18)).toFixed(2)}ETH</p>
 			</main>
 		</div>
 	)

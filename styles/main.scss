@@ -10,12 +10,13 @@ body {
 			font-weight: 200;
 		}
 		>button {
-			background-color: #b8791c;
+			margin-top: 1em;
+			background-color: #e09320;
 			border: none;
-			color: white;
+			color: #222d34;
 			font-size: 15px;
 			cursor: pointer;
-			padding: .5em;
+			padding: .3em .5em;
 		}
 		>.number-input {
 			background-color: white;
@@ -24,12 +25,7 @@ body {
 			width: min-content;
 			align-items: center;
 			border-radius: .2em;
-			>input::-webkit-outer-spin-button,
-			input::-webkit-inner-spin-button {
-				-webkit-appearance: none;
-				margin: 0;
-			}
-			>input {
+			>span {
 				text-align: center;
 				padding: 0;
 				height: 100%;

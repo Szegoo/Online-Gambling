@@ -8,6 +8,7 @@ contract Game {
     address[] public players;
     uint8 maximum = 5;
     uint8 public winnerNumber;
+    address[] private localWinners;
 
     uint256 public ticketDeadline;
     uint256 public revealDeadline;
@@ -30,24 +31,37 @@ contract Game {
     }
 
     function revealNumber() public {
-        require(block.timestamp >= revealDeadline);
-        require(prize > 0);
-        bytes32 random =
-            keccak256(abi.encodePacked(blockhash(block.number - 1)));
-        address[] storage localwinners;
-        uint256 finalNumber = uint256(random) % maximum;
-        for (uint256 i = 0; i < players.length; i++) {
-            if (commitments[players[i]] == finalNumber) {
-                localwinners.push(players[i]);
+        require(
+            block.timestamp >= revealDeadline,
+            "You need to wait for reveal deadline"
+        );
+        if (prize == 0) {
+            ticketDeadline = block.timestamp + duration;
+            revealDeadline = ticketDeadline + revealDuration;
+        } else {
+            bytes32 random =
+                keccak256(abi.encodePacked(blockhash(block.number - 1)));
+            uint256 finalNumber = uint256(random) % maximum;
+            for (uint256 i = 0; i < players.length; i++) {
+                if (commitments[players[i]] == finalNumber) {
+                    localWinners.push(players[i]);
+                    delete commitments[players[i]];
+                }
+            }
+            if (localWinners.length == 0) {
+                ticketDeadline = block.timestamp + duration;
+                revealDeadline = ticketDeadline + revealDuration;
+                delete players;
+            } else {
+                uint256 singlePrize = prize / localWinners.length;
+                for (uint256 i = 0; i < localWinners.length; i++) {
+                    winners[localWinners[i]] += singlePrize;
+                }
+                winnerNumber = uint8(finalNumber);
+                ticketDeadline = block.timestamp + duration;
+                revealDeadline = ticketDeadline + revealDuration;
             }
         }
-        uint256 singlePrize = prize / localwinners.length;
-        for (uint256 i = 0; i < localwinners.length; i++) {
-            winners[players[i]] += singlePrize;
-        }
-        winnerNumber = uint8(finalNumber);
-        ticketDeadline = block.timestamp + duration;
-        revealDeadline = ticketDeadline + revealDuration;
     }
 
     function withdraw() public {
