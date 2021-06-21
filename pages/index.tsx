@@ -28,7 +28,7 @@ export default () => {
 		Game.events.PlayerJoined({})
 			.on('data', event => {
 				console.log(event);
-				setPrize(prevPrize => prevPrize + 0.01);
+				setPrize(prize + 0.01);
 			});
 		Game.events.GameEnded({})
 			.on('data', event => {
@@ -40,7 +40,6 @@ export default () => {
 		const accounts = await window.ethereum.enable();
 		const account = accounts[0];
 		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
-		const res = Game.methods.winners(account);
 		await Game.methods.withdraw().call();
 	}
 	const play = async (number) => {
@@ -130,13 +129,15 @@ export default () => {
 				<h3 style={{ color: "white" }}>Winner number: {winnerNumber}</h3>
 				<h4 >Last winner number: {lastWinnerNumber}</h4>
 				<button onClick={checkIsWinner}>Withdraw</button>
+				<hr />
+				{timer <= 0 &&
+					<div>
+						<h1 style={{ color: "white" }}>Reveal the number</h1>
+						<button className="reveal-button" onClick={revealNumber}>Reveal</button>
+						<p>(Ako metamask izbaci error to znaci da je vec neko drugi pozvao funkciju)</p>
+					</div>
+				}
 			</main>
-			{timer <= 0 &&
-				<div className="modal">
-					<h1>Reveal the number</h1>
-					<button onClick={revealNumber}>Reveal</button>
-				</div>
-			}
 		</div>
 	)
 }
