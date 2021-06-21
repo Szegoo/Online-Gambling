@@ -14,7 +14,7 @@ const enableMetamask = async (): Promise<{ prize: number, razlika: number }> => 
 	const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
 	const prize = await Game.methods.prize().call();
 	const endTime = await Game.methods.revealDeadline().call();
-	const razlika = endTime - (Date.now() / 1000)
+	const razlika = (endTime - (Date.now() / 1000)) + 10;
 	return {
 		prize,
 		razlika
@@ -28,12 +28,17 @@ export default () => {
 		Game.events.PlayerJoined({})
 			.on('data', event => {
 				console.log(event);
-				setPrize(prize + 0.01);
+				console.log(prize);
+				setPrize(prize => prize + (Math.pow(10, 18) * 0.01));
 			});
 		Game.events.GameEnded({})
 			.on('data', event => {
 				setWinNum(event.returnValues.luckyNumber);
 				checkIsWinner();
+				enableMetamask().then(data => {
+					setPrize(data.prize);
+					setTimer(data.razlika);
+				})
 			})
 	}
 	const checkIsWinner = async () => {
