@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 const web3 = new Web3(Web3.givenProvider);
 declare let window: any;
 
-export const contractAddress = "0xa53b20079E5362cc5Af9A961438c488f79d1372E";
+export const contractAddress = "0x487504a4aC37b923a72ebFd30c27ef6DA5A28cB0";
 const enableMetamask = async (): Promise<{ prize: number, razlika: number }> => {
 	const accounts = await window.ethereum.enable();
 	const account = accounts[0];
@@ -29,7 +29,7 @@ export default () => {
 			.on('data', event => {
 				console.log(event);
 				console.log(prize);
-				setPrize(prize => prize + (Math.pow(10, 18) * 0.01));
+				setPrize(prize => prize + 1);
 			});
 		Game.events.GameEnded({})
 			.on('data', event => {
@@ -45,7 +45,7 @@ export default () => {
 		const accounts = await window.ethereum.enable();
 		const account = accounts[0];
 		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
-		await Game.methods.withdraw().call();
+		await Game.methods.withdraw().send();
 	}
 	const play = async (number) => {
 		const accounts = await window.ethereum.enable();
@@ -80,7 +80,6 @@ export default () => {
 	const [winnerNumber, setWinNum] = useState(0);
 	const max = 5;
 	useEffect(() => {
-		checkIsWinner();
 		trackEvents();
 		LastWinnerNumber(true);
 		enableMetamask().then(data => {

@@ -27,7 +27,7 @@ contract Game {
         require(number <= maximum);
         require(msg.value == TICKET_PRICE);
         require(block.timestamp < ticketDeadline);
-        commitments[msg.sender] == number;
+        commitments[msg.sender] = number;
         players.push(msg.sender);
         prize += TICKET_PRICE;
         emit PlayerJoined(msg.sender, number);
