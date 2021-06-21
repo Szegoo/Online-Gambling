@@ -1,6 +1,24 @@
 import { AbiItem } from "web3-utils"
 export const ABI: AbiItem[] = [
 	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "luckyNumber",
+				"type": "uint256"
+			}
+		],
+		"name": "GameEnded",
+		"type": "event"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint8",
@@ -14,16 +32,30 @@ export const ABI: AbiItem[] = [
 		"type": "function"
 	},
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "plaayer",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "number",
+				"type": "uint256"
+			}
+		],
+		"name": "PlayerJoined",
+		"type": "event"
+	},
+	{
 		"inputs": [],
 		"name": "revealNumber",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
-	},
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
 	},
 	{
 		"inputs": [],

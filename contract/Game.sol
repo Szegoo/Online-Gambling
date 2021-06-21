@@ -14,6 +14,8 @@ contract Game {
     uint256 public revealDeadline;
     uint16 public revealDuration = 1 minutes;
     uint16 public duration = 5 minutes;
+    event PlayerJoined(address indexed plaayer, uint256 indexed number);
+    event GameEnded(uint256 indexed luckyNumber);
 
     constructor() public {
         owner = msg.sender;
@@ -28,6 +30,7 @@ contract Game {
         commitments[msg.sender] == number;
         players.push(msg.sender);
         prize += TICKET_PRICE;
+        emit PlayerJoined(msg.sender, number);
     }
 
     function revealNumber() public {
@@ -38,6 +41,7 @@ contract Game {
         if (prize == 0) {
             ticketDeadline = block.timestamp + duration;
             revealDeadline = ticketDeadline + revealDuration;
+            emit GameEnded(0);
         } else {
             bytes32 random =
                 keccak256(abi.encodePacked(blockhash(block.number - 1)));
@@ -52,6 +56,7 @@ contract Game {
                 ticketDeadline = block.timestamp + duration;
                 revealDeadline = ticketDeadline + revealDuration;
                 winnerNumber = uint8(finalNumber);
+                emit GameEnded(finalNumber);
                 delete players;
             } else {
                 uint256 singlePrize = prize / localWinners.length;
@@ -62,6 +67,7 @@ contract Game {
                 winnerNumber = uint8(finalNumber);
                 ticketDeadline = block.timestamp + duration;
                 revealDeadline = ticketDeadline + revealDuration;
+                emit GameEnded(finalNumber);
             }
         }
     }

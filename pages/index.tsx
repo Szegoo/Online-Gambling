@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 const web3 = new Web3(Web3.givenProvider);
 declare let window: any;
 
-export const contractAddress = "0x6391B9BC74d883150df8fD0c456504B6B6b88A0A";
+export const contractAddress = "0xa53b20079E5362cc5Af9A961438c488f79d1372E";
 const enableMetamask = async (): Promise<{ prize: number, razlika: number }> => {
 	const accounts = await window.ethereum.enable();
 	const account = accounts[0];
@@ -21,6 +21,28 @@ const enableMetamask = async (): Promise<{ prize: number, razlika: number }> => 
 	};
 }
 export default () => {
+	const trackEvents = async () => {
+		const accounts = await window.ethereum.enable();
+		const account = accounts[0];
+		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
+		Game.events.PlayerJoined({})
+			.on('data', event => {
+				console.log(event);
+				setPrize(prevPrize => prevPrize + 0.01);
+			});
+		Game.events.GameEnded({})
+			.on('data', event => {
+				setWinNum(event.returnValues.luckyNumber);
+				checkIsWinner();
+			})
+	}
+	const checkIsWinner = async () => {
+		const accounts = await window.ethereum.enable();
+		const account = accounts[0];
+		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
+		const res = Game.methods.winners(account);
+		await Game.methods.withdraw().call();
+	}
 	const play = async (number) => {
 		const accounts = await window.ethereum.enable();
 		const account = accounts[0];
@@ -54,13 +76,14 @@ export default () => {
 	const [winnerNumber, setWinNum] = useState(0);
 	const max = 5;
 	useEffect(() => {
+		checkIsWinner();
+		trackEvents();
 		LastWinnerNumber(true);
 		enableMetamask().then(data => {
 			setPrize(data.prize);
 			setTimer(data.razlika);
 		});
 		setInterval(() => {
-			console.log(timer);
 			if (timer >= 0)
 				setTimer(prev => prev - 1);
 			else {
@@ -96,7 +119,7 @@ export default () => {
 					Join The Game
 				</button>
 				<p>Total prize: {(prize * Math.pow(10, -18)).toFixed(2)}ETH</p>
-				<h1 className="counter">{timer < 0 && "-"}{humanize(timer.toFixed(0))}</h1>
+				<h1 className="counter">{timer < 0 ? "0" : humanize(timer.toFixed(0))}</h1>
 				<p>Your number: {counter}</p>
 				<h3 style={{ color: "white" }}>Winner number: {winnerNumber}</h3>
 				<h4 >Last winner number: {lastWinnerNumber}</h4>
