@@ -96,6 +96,12 @@ export default () => {
 	const humanize = (time) => {
 		return humanizeDuration(time * 1000);
 	}
+	const revealNumber = async () => {
+		const accounts = await window.ethereum.enable();
+		const account = accounts[0];
+		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
+		await Game.methods.revealNumber().send();
+	}
 	return (
 		<div>
 			<NavBar backgroundColor="#21313b" color="#e09320" />
@@ -123,7 +129,14 @@ export default () => {
 				<p>Your number: {counter}</p>
 				<h3 style={{ color: "white" }}>Winner number: {winnerNumber}</h3>
 				<h4 >Last winner number: {lastWinnerNumber}</h4>
+				<button onClick={checkIsWinner}>Withdraw</button>
 			</main>
+			{timer <= 0 &&
+				<div className="modal">
+					<h1>Reveal the number</h1>
+					<button onClick={revealNumber}>Reveal</button>
+				</div>
+			}
 		</div>
 	)
 }
