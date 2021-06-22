@@ -28,16 +28,17 @@ export default () => {
 	const [timer, setTimer] = useState(0);
 	const [lastWinnerNumber, setLastWinNum] = useState(0);
 	const [winnerNumber, setWinNum] = useState(0);
+	const [balance, setBalance] = useState(0);
 	const max = 5;
 	const trackEvents = async () => {
 		const accounts = await window.ethereum.enable();
 		const account = accounts[0];
 		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
 		Game.events.PlayerJoined({})
-			.on('data', event => {
-				console.log(event);
-				console.log(prize);
+			.on('data', async (event) => {
 				setPrize(prize => prize + 1);
+				const prize = await Game.methods.prize().call();
+				setPrize(prize);
 			});
 		Game.events.GameEnded({})
 			.on('data', event => {
@@ -83,6 +84,9 @@ export default () => {
 	useEffect(() => {
 		trackEvents();
 		LastWinnerNumber(true);
+		getBalance().then((data) => {
+			console.log(data);
+		})
 		enableMetamask().then(data => {
 			setPrize(data.prize);
 			setTimer(data.razlika);
@@ -110,12 +114,13 @@ export default () => {
 				localStorage.setItem('number', number.toString());
 		}
 	}
-	const getBalance = async () => {
+	const getBalance = async (): Promise<number> => {
 		const accounts = await window.ethereum.enable();
 		const account = accounts[0];
 		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
-		const balance = await Game.methods.winners(account);
-		console.log(balance);
+		const balance = await Game.methods.winners(account).call();
+		setBalance(Number(balance));
+		return balance
 	}
 	return (
 		<div>
@@ -132,7 +137,7 @@ export default () => {
 				<p>Your number: {getOrSet(-1)}</p>
 				<h3 style={{ color: "white" }}>Winner number: {winnerNumber}</h3>
 				<h4 >Last winner number: {lastWinnerNumber}</h4>
-				<p style={{ margin: "0", color: "white" }}>Your balance: </p>
+				<p style={{ margin: "0", color: "white" }}>Your balance: {balance * Math.pow(10, -18)}ETH</p>
 				<button onClick={checkIsWinner}>Withdraw</button>
 				<hr />
 				{timer <= 0 &&
