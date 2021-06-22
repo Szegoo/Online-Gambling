@@ -4,6 +4,8 @@ import Web3 from 'web3';
 import BigNumber from 'bignumber.js';
 import { ABI } from '../contract/ABI';
 import { useEffect, useState } from 'react';
+import RevealNumber from '../components/RevealNumber';
+import Counter from '../components/Counter';
 const web3 = new Web3(Web3.givenProvider);
 declare let window: any;
 
@@ -21,6 +23,12 @@ const enableMetamask = async (): Promise<{ prize: number, razlika: number }> => 
 	};
 }
 export default () => {
+	const [counter, setCounter] = useState(0);
+	const [prize, setPrize] = useState(0);
+	const [timer, setTimer] = useState(0);
+	const [lastWinnerNumber, setLastWinNum] = useState(0);
+	const [winnerNumber, setWinNum] = useState(0);
+	const max = 5;
 	const trackEvents = async () => {
 		const accounts = await window.ethereum.enable();
 		const account = accounts[0];
@@ -52,7 +60,7 @@ export default () => {
 		const account = accounts[0];
 		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
 		const value = new BigNumber(Math.pow(10, 16)).toString();
-		setSent(true);
+		getOrSet(number);
 		await Game.methods.join(number).send({
 			value
 		});
@@ -72,13 +80,6 @@ export default () => {
 			}
 		}
 	}
-	const [counter, setCounter] = useState(0);
-	const [prize, setPrize] = useState(0);
-	const [timer, setTimer] = useState(0);
-	const [sent, setSent] = useState(false);
-	const [lastWinnerNumber, setLastWinNum] = useState(0);
-	const [winnerNumber, setWinNum] = useState(0);
-	const max = 5;
 	useEffect(() => {
 		trackEvents();
 		LastWinnerNumber(true);
@@ -99,11 +100,22 @@ export default () => {
 	const humanize = (time) => {
 		return humanizeDuration(time * 1000);
 	}
-	const revealNumber = async () => {
+	const getOrSet = (number: number) => {
+		if (number === -1) {
+			if (typeof window !== typeof undefined)
+				return localStorage.getItem('number');
+			else return 0;
+		} else {
+			if (typeof window !== typeof undefined)
+				localStorage.setItem('number', number.toString());
+		}
+	}
+	const getBalance = async () => {
 		const accounts = await window.ethereum.enable();
 		const account = accounts[0];
 		const Game = new web3.eth.Contract(ABI, contractAddress, { from: account });
-		await Game.methods.revealNumber().send();
+		const balance = await Game.methods.winners(account);
+		console.log(balance);
 	}
 	return (
 		<div>
@@ -111,35 +123,20 @@ export default () => {
 			<main>
 				<h1>Welcome to Crypto-Gambling</h1>
 				<h2>Pogodi broj od 0 do 5</h2>
-				<div className="number-input">
-					<button disabled={sent} onClick={() => {
-						if (counter > 0) {
-							setCounter(counter - 1);
-						}
-					}}>-</button>
-					<span>{counter}</span>
-					<button disabled={sent} onClick={() => {
-						if (counter < max) {
-							setCounter(counter + 1);
-						}
-					}}>+</button>
-				</div>
+				<Counter counter={counter} max={max} setCounter={setCounter} />
 				<button onClick={() => play(counter)}>
 					Join The Game
 				</button>
 				<p>Total prize: {(prize * Math.pow(10, -18)).toFixed(2)}ETH</p>
 				<h1 className="counter">{timer < 0 ? "0" : humanize(timer.toFixed(0))}</h1>
-				<p>Your number: {counter}</p>
+				<p>Your number: {getOrSet(-1)}</p>
 				<h3 style={{ color: "white" }}>Winner number: {winnerNumber}</h3>
 				<h4 >Last winner number: {lastWinnerNumber}</h4>
+				<p style={{ margin: "0", color: "white" }}>Your balance: </p>
 				<button onClick={checkIsWinner}>Withdraw</button>
 				<hr />
 				{timer <= 0 &&
-					<div>
-						<h1 style={{ color: "white" }}>Reveal the number</h1>
-						<button className="reveal-button" onClick={revealNumber}>Reveal</button>
-						<p>(Ako metamask izbaci error to znaci da je vec neko drugi pozvao funkciju)</p>
-					</div>
+					<RevealNumber />
 				}
 			</main>
 		</div>
